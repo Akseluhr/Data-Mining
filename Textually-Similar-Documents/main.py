@@ -17,7 +17,7 @@
 #     val = (val * 100 + ord(c)) % (2 ** 32)
 #
 # print(val)
-
+#
 # from shingling import Shingling
 # from comparesets import CompareSets
 #
