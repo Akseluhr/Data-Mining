@@ -1,5 +1,5 @@
 class Shingling:
-    def __int__(self, k):
+    def __int__(self, k=10):
         self.k = k
 
     @staticmethod
@@ -12,6 +12,6 @@ class Shingling:
     def create_shingles(self, document):
         shingles_set = []
         for i in range(len(document) - self.k + 1):
-            shingles_set.append(self.hash_shingles(document[i: i + self.k]))
+            shingles_set.append(self.hash_shingles(self, document[i: i + self.k]))
 
         return sorted(set(shingles_set))
