@@ -1,0 +1,1 @@
+import numpy as npclass LHS:   def __init__(self, threshold=0.5):       self.threshold = threshold           def split(self, matrix, bands):       matrix = np.array(matrix)       return np.split(matrix.T, bands)def main():    lhs = LHS()    split = lhs.split([[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12]], 2)    print(split)main()
