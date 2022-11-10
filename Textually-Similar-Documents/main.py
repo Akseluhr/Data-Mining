@@ -19,15 +19,20 @@
 # print(val)
 #
 from shingling import Shingling
-
-# from comparesets import CompareSets
+from minhashing import MinHashing
 
 document1 = "This"
 document2 = "They"
 
 ss = Shingling()
+mh = MinHashing()
 ss.__int__(2)
-print(ss.create_characteristics_matrix([document1, document2]))  # return a set of hashed values for shingles
+mh.__int__(100)
+char_matrix = ss.create_characteristics_matrix([document1, document2])  # return a set of hashed values for shingles
+signature_matrix = mh.compute_min_hash_signature_matrix(char_matrix)
+
+print(signature_matrix)
+
 #
 # cs = CompareSets()
 #
