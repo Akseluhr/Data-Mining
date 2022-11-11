@@ -5,6 +5,7 @@ class CompareSignatures:
         pass
 
     # Estimate of jaccard similarity 
+    # We will compare this with the actual jaccard similarity
     def compare(self, signature_matrix):
         length_rows = len(signature_matrix[0])
         length_cols = len(signature_matrix)
