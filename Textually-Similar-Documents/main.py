@@ -20,19 +20,24 @@
 #
 from shingling import Shingling
 from minhashing import MinHashing
-from comparesignatures import CompareSignatures
+from lsh import LSH
 
-document1 = "This"
-document2 = "They"
+document1 = "This is a similar document let see what happens"
+document2 = "Yo what the flux man you sum goodie"
+document3 = "This is a almost similar document let see what happens"
+document4 = "Yo what the flux man you sum goodie"
 
 ss = Shingling()
 mh = MinHashing()
-cs = CompareSignatures()
+lsh = LSH()
 ss.__int__(2)
 mh.__int__(100)
-char_matrix = ss.create_characteristics_matrix([document1, document2])  # return a set of hashed values for shingles
+lsh.__int__(50, 0.8)
+char_matrix = ss.create_characteristics_matrix([document1, document2, document3, document4])
 signature_matrix = mh.compute_min_hash_signature_matrix(char_matrix)
-print(signature_matrix)
+candidate_pairs = lsh.find_similar_documents(signature_matrix)
+
+print(candidate_pairs)
 #
 # cs = CompareSets()
 #
