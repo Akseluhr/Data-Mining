@@ -1,3 +1,4 @@
+# ----------------------------------------------------------------------------------------------------------------------
 # playground
 
 # shingle1 = 'abc'
@@ -18,27 +19,37 @@
 #
 # print(val)
 #
-from shingling import Shingling
-from minhashing import MinHashing
-from lsh import LSH
-
-document1 = "This is a similar document let see what happens"
-document2 = "Yo what the flux man you sum goodie"
-document3 = "This is a almost similar document let see what happens"
-document4 = "Yo what the flux man you sum goodie"
-
-ss = Shingling()
-mh = MinHashing()
-lsh = LSH()
-ss.__int__(2)
-mh.__int__(100)
-lsh.__int__(50, 0.8)
-char_matrix = ss.create_characteristics_matrix([document1, document2, document3, document4])
-signature_matrix = mh.compute_min_hash_signature_matrix(char_matrix)
-candidate_pairs = lsh.find_similar_documents(signature_matrix)
-
-print(candidate_pairs)
 #
 # cs = CompareSets()
 #
 # print(cs.compute_jaccard_similarity([1,2,3,4], [1,2,5])) # 2/5 = 0.4 similarity
+# ----------------------------------------------------------------------------------------------------------------------
+from datareader import DataReader
+from shingling import Shingling
+from minhashing import MinHashing
+from lsh import LSH
+
+data_reader = DataReader()
+shingling_docs = Shingling()
+min_hashing = MinHashing()
+lsh = LSH()
+
+shingling_docs.__int__(2)
+min_hashing.__int__(100)
+lsh.__int__(100, 0.8)
+
+path_to_files = './data/'
+
+clean_documents = DataReader.read_and_pre_process_all_documents(data_reader, path_to_files)
+char_matrix = shingling_docs.create_characteristics_matrix(clean_documents)
+signature_matrix = min_hashing.compute_min_hash_signature_matrix(char_matrix)
+candidate_pairs = lsh.find_similar_documents(signature_matrix)
+
+print('Following pair represents the similar text files: ', candidate_pairs)
+
+
+
+
+
+
+

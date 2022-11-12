@@ -15,36 +15,36 @@ class LSH:
         number_of_bands = self.number_of_bands
         (number_of_signature, number_of_documents) = signature_matrix.shape
 
-        print('num of sig: ', number_of_signature, 'num of docs', number_of_documents)
+        # print('num of sig: ', number_of_signature, 'num of docs', number_of_documents)
 
         rows_per_band = math.ceil(number_of_signature / number_of_bands)
 
-        print('num of rows per band: ', rows_per_band)
+        # print('num of rows per band: ', rows_per_band)
 
         candidate_pairs = set()
         column_buckets = defaultdict(list)
 
-        print('Initial Column buckets and Candidate Pairs: ', column_buckets, candidate_pairs)
+        # print('Initial Column buckets and Candidate Pairs: ', column_buckets, candidate_pairs)
 
         for band_idx in range(number_of_bands):
 
-            print(band_idx)
+            # print(band_idx)
 
             band = signature_matrix[band_idx * rows_per_band: (band_idx + 1) * rows_per_band]
 
-            print('Band::', band)
+            # print('Band::', band)
 
             for document_id, column in enumerate(band.T):
-                print('doc id: ', document_id, ' column: ', column)
+                # print('doc id: ', document_id, ' column: ', column)
                 column_buckets[tuple(column)].append(document_id)
 
-            print('column buckets: ', column_buckets)
+            # print('column buckets: ', column_buckets)
 
             for document_ids in column_buckets.values():
-                print('doc ids in column bucket :', document_ids)
+                # print('doc ids in column bucket :', document_ids)
                 pairwise_combinations = itertools.combinations(document_ids, 2)
                 candidate_pairs.update(pairwise_combinations)
-                print('candidate pairs :', candidate_pairs)
+                # print('candidate pairs :', candidate_pairs)
 
             column_buckets.clear()
 
