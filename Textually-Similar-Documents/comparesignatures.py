@@ -11,16 +11,19 @@ class CompareSignatures:
         length_cols = len(signature_matrix)
         count = 0
         
+        jaccard_similarity_estimate = []
         # For each col (documents)
         for i in range(1, length_cols):
             # For each row (shingles)
             for j in range(length_rows):
                 if(signature_matrix[i][j] == signature_matrix[i-1][j]):
                     count += 1
-             
-            # Non-necessary var declaration but good for readability
-            jacc_estimate = count/length_rows
-        print(jacc_estimate)
+                    # Non-necessary var declaration but good for readability
+        
+            jaccard_similarity_estimate.append([i-1, i, count/length_rows])
+            count=0
+
+        print(jaccard_similarity_estimate)
         
 def main(): 
     example_matrix = [[1, 0, 1, 1, 0, 1, 0, 1], [0, 0, 1, 0, 1, 0, 0, 1]]
