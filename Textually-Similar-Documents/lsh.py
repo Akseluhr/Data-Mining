@@ -1,7 +1,7 @@
 import math
 from collections import defaultdict
 import itertools
-
+import time
 from comparesignatures import CompareSignatures
 
 
@@ -38,7 +38,7 @@ class LSH:
                 # print('doc id: ', document_id, ' column: ', column)
                 column_buckets[tuple(column)].append(document_id)
 
-            # print('column buckets: ', column_buckets)
+            #print('column buckets: ', column_buckets)
 
             for document_ids in column_buckets.values():
                 # print('doc ids in column bucket :', document_ids)
@@ -53,10 +53,11 @@ class LSH:
     def find_similar_documents(self, signature_matrix):
         candidate_pairs = self.find_candidates_pairs_from_signature_matrix(signature_matrix)
         similar_documents = []
-
+        
+        start_time = time.time()
         for candidate in candidate_pairs:
             document_similarity = CompareSignatures.signature_similarity(signature_matrix, *candidate)
             if document_similarity > self.similarity_threshold:
                 similar_documents.append(candidate)
-
-        return similar_documents
+        end_time = time.time()
+        return similar_documents, start_time, end_time
