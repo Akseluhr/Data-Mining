@@ -1,6 +1,9 @@
 class CompareSets:
-    @staticmethod
-    def compute_j_similarity(set_one, set_two):
+    
+    def __init__(self):
+        pass
+        
+    def compute_j_similarity(self, set_one, set_two):
         set_1 = set(set_one)
         set_2 = set(set_two)
 
