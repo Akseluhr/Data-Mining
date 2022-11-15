@@ -45,13 +45,21 @@ class Shingling:
     def create_characteristics_matrix(self, documents):
         documents_shingles, shingle_with_ids = self.create_hashed_shingles_for_all_documents(documents)
 
+        # print('Doc Shingles:: ', documents_shingles)
+        # print('Doc Shingles with IDs ::', shingle_with_ids)
+
         number_of_documents = len(documents_shingles)  # column of characteristic matrix
         number_of_shingles = len(shingle_with_ids)  # row of characteristic matrix
+
+        # print(number_of_shingles, number_of_documents)
 
         values = []
         for doc_id, shingles in enumerate(documents_shingles):
             for shingle in shingles:
+                # print(shingle, shingle_with_ids[shingle])
                 values.append((shingle_with_ids[shingle], doc_id, 1))
+
+        # print(values)
 
         shingle_indices, doc_indices, data = zip(*values)
 
@@ -59,4 +67,5 @@ class Shingling:
         characteristic_matrix = sparse.csr_matrix((data, (shingle_indices, doc_indices)),
                                                   shape=(number_of_shingles, number_of_documents), dtype=np.bool_)
 
+        # print(characteristic_matrix)
         return characteristic_matrix
