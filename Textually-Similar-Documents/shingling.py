@@ -1,5 +1,7 @@
 from scipy import sparse
 import numpy as np
+from comparesets import CompareSets
+import time
 
 
 class Shingling:
@@ -40,12 +42,13 @@ class Shingling:
             for shingle in shingles:
                 unique_shingles_set.add(shingle)
 
-        shingle_with_ids = {shingle: idx for idx, shingle in enumerate(sorted(unique_shingles_set))}
+        unique_shingle_with_ids = {shingle: idx for idx, shingle in enumerate(sorted(unique_shingles_set))}
 
-        return documents_shingles, shingle_with_ids
+        return documents_shingles, unique_shingle_with_ids
 
-    def create_characteristics_matrix(self, documents):
+    def create_characteristics_matrix(self, documents, check_similarity=False):
         documents_shingles, shingle_with_ids = self.create_hashed_shingles_for_all_documents(documents)
+        c_sets = CompareSets()
 
         # print('Doc Shingles:: ', documents_shingles)
         # print('Doc Shingles with IDs ::', shingle_with_ids)
@@ -61,6 +64,23 @@ class Shingling:
                 # print(shingle, shingle_with_ids[shingle])
                 values.append((shingle_with_ids[shingle], doc_id, 1))
 
+        if check_similarity:
+            start_time = time.time()
+            jaccard_similarities = []
+            for curr_doc in range(len(documents_shingles)):
+                for compare_col in range(len(documents_shingles)):
+                    if documents_shingles[curr_doc] != documents_shingles[compare_col]:  # avoid same doc comparisons
+                        jaccard_similarities.append((compare_col,
+                                                     c_sets.compute_j_similarity(documents_shingles[curr_doc],
+                                                                                 documents_shingles[compare_col])))
+            end_time = time.time()
+        number_of_documents = len(documents_shingles)  # column of characteristic matrix
+        number_of_shingles = len(shingle_with_ids)  # row of characteristic matrix
+        values = []
+        for doc_id, shingles in enumerate(documents_shingles):
+            for shingle in shingles:
+                values.append((shingle_with_ids[shingle], doc_id, 1))
+
         # print(values)
 
         shingle_indices, doc_indices, data = zip(*values)
@@ -70,4 +90,4 @@ class Shingling:
                                                   shape=(number_of_shingles, number_of_documents), dtype=np.bool_)
 
         # print(characteristic_matrix)
-        return characteristic_matrix
+        return characteristic_matrix, jaccard_similarities, start_time, end_time
