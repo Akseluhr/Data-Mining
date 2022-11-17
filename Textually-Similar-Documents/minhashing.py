@@ -30,14 +30,14 @@ class MinHashing:
             """ compute number_of_hash_signature independent hash functions """
             hashes = ((a * row_idx + b) % p) % number_of_shingles
 
-            #print('HASHES "', hashes)
+            print('HASHES "', hashes)
 
             for document_id in document_ids:
                 #print(document_id)
-                #print('DEBUG :: ', document_id, hashes, signature_matrix[:, document_id], hashes < signature_matrix[:, document_id] )
+                print('DEBUG :: ', document_id, hashes, signature_matrix[:, document_id], hashes < signature_matrix[:, document_id] )
                 signature_matrix[:, document_id] = np.where(hashes < signature_matrix[:, document_id],
                                                             hashes, signature_matrix[:, document_id])
-                #print('SIG MAT ::', signature_matrix)
+                print('SIG MAT ::', signature_matrix)
 
 
         return signature_matrix

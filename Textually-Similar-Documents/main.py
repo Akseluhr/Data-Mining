@@ -28,25 +28,39 @@ from datareader import DataReader
 from shingling import Shingling
 from minhashing import MinHashing
 from lsh import LSH
+from comparesets import CompareSets
 
 data_reader = DataReader()
 shingling_docs = Shingling()
 min_hashing = MinHashing()
 lsh = LSH()
 
-shingling_docs.__int__(2)
+shingling_docs.__int__(10)
 min_hashing.__int__(5)
 lsh.__int__(5, 0.2)
 
 path_to_files = './data/'
 
-# clean_documents = DataReader.read_and_pre_process_all_documents(data_reader, path_to_files)
+clean_documents = DataReader.read_and_pre_process_all_documents(data_reader, path_to_files)
 
-char_matrix = shingling_docs.create_characteristics_matrix(['They', 'This'])
-signature_matrix = min_hashing.compute_min_hash_signature_matrix(char_matrix)
-candidate_pairs = lsh.find_similar_documents(signature_matrix)
+document_1_shingles = shingling_docs.create_shingles(clean_documents[0])
+document_2_shingles = shingling_docs.create_shingles(clean_documents[1])
+document_3_shingles = shingling_docs.create_shingles(clean_documents[2])
+document_4_shingles = shingling_docs.create_shingles(clean_documents[3])
+document_5_shingles = shingling_docs.create_shingles(clean_documents[4])
+document_6_shingles = shingling_docs.create_shingles(clean_documents[5])
 
-print('Following pair represents the similar text files: ', candidate_pairs)
+print(CompareSets.compute_j_similarity(document_3_shingles, document_6_shingles))
+print(CompareSets.compute_j_similarity(document_1_shingles, document_3_shingles))
+print(CompareSets.compute_j_similarity(document_1_shingles, document_4_shingles))
+print(CompareSets.compute_j_similarity(document_1_shingles, document_5_shingles))
+print(CompareSets.compute_j_similarity(document_1_shingles, document_6_shingles))
+
+# char_matrix = shingling_docs.create_characteristics_matrix(['They', 'This'])
+# signature_matrix = min_hashing.compute_min_hash_signature_matrix(char_matrix)
+# candidate_pairs = lsh.find_similar_documents(signature_matrix)
+#
+# print('Following pair represents the similar text files: ', candidate_pairs)
 
 
 

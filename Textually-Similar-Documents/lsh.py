@@ -32,6 +32,8 @@ class LSH:
 
             band = signature_matrix[band_idx * rows_per_band: (band_idx + 1) * rows_per_band]
 
+            print('EACH BAND ::', band)
+
             # print(signature_matrix[band_idx])
             # print('Band::', band.T)
             # print('column buckets before: ', column_buckets)
@@ -40,6 +42,8 @@ class LSH:
                 #print('doc id: ', document_id, ' column: ', column)
                 column_buckets[tuple(column)].append(document_id)
                 #print('column buckets: ', column_buckets)
+
+            print('COL BUCKETS:: ', column_buckets)
 
             for document_ids in column_buckets.values():
                 print('doc ids in column bucket :', document_ids)

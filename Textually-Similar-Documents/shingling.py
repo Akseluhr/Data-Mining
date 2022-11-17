@@ -10,7 +10,9 @@ class Shingling:
     def hash_shingles(self, shingle, max_shingle_id=2 ** 32 - 1):
         val = 0
         for c in shingle:
+            print('THIS IS SHINGLING ::', val, c, ord(c), (val * 100 + ord(c)))
             val = (val * 100 + ord(c)) % max_shingle_id
+            print('AFTER CALC ::', val)
         return val
 
     def create_hashed_shingles(self, document):
