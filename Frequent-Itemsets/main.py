@@ -21,9 +21,12 @@ def find_frequent_itemsets(tansactions, s, k=2):
                 unique_items.append(item)
     print('all unique items:', unique_items)
 
-    support_singleton_count = []
+    support_singleton_item = []
+    support_singleton_total = []
     support_doubleton_count = []
     support_tripleton_count = []
+    
+    
     count = 0
     # find support
     for i in range(k+1):
@@ -35,12 +38,14 @@ def find_frequent_itemsets(tansactions, s, k=2):
         
                 
                 if count >= s:
-                    support_singleton_count.append(item)
+                    support_singleton_item.append(item)
+                    support_singleton_total.append((item, count))
                 count = 0
                     
-            print('frequent singletons:', support_singleton_count)
+            print('frequent singletons:', support_singleton_item)
+            print('all counts', support_singleton_total)
         if i == 1: # step 2
-            all_possible_pairs = list(itertools.combinations(support_singleton_count, 2))
+            all_possible_pairs = list(itertools.combinations(support_singleton_item, 2))
            # print(all_possible_pairs) # all possible pairs of the frequent singletons
             count = 0
             for pair in all_possible_pairs:
@@ -51,7 +56,7 @@ def find_frequent_itemsets(tansactions, s, k=2):
                       #  print(pair, basket, count)
                         
                 if count >= s:
-                    support_doubleton_count.append(count)
+                    support_doubleton_count.append((pair, count))
                 count = 0
                 
                 #for i in range(len(pair)):
@@ -60,8 +65,7 @@ def find_frequent_itemsets(tansactions, s, k=2):
             print("frequent doubletons:", support_doubleton_count)
         
         if i == 2: # step 3
-            all_possible_pairs = list(itertools.combinations(support_singleton_count, 3))
-            print(all_possible_pairs)
+            all_possible_pairs = list(itertools.combinations(support_singleton_item, 3))
             count = 0
             for pair in all_possible_pairs:
                 for basket in tansactions:
@@ -71,7 +75,7 @@ def find_frequent_itemsets(tansactions, s, k=2):
                       #  print(pair, basket, count)
                         
                 if count >= s:
-                    support_tripleton_count.append(pair)
+                    support_tripleton_count.append((pair, count))
                 count = 0
                 
                 #for i in range(len(pair)):
@@ -79,10 +83,38 @@ def find_frequent_itemsets(tansactions, s, k=2):
             
             print("frequent tripletons:", support_tripleton_count)
                 
-    return support_singleton_count, support_doubleton_count, support_tripleton_count
+    return list([support_singleton_total, support_doubleton_count, support_tripleton_count])
 
-def generate_association_rules(data, s, c):
-    pass
+def calculate_confidence(doubletons, singletons):
+    s_I = set(doubletons)
+    s_j = set(singletons)
+    print(s_j)
+    confidence = []
+    for dt in doubletons:
+       print(dt)
+       #comb = list(itertools.combinations(dt[0], 2))
+       
+       dt_support = dt[1] # <-- divide this with support of current I
+       
+       for j in singletons:
+           if j[0] == dt[0][0]:
+               print(j[1])
+               confidence.append(dt[1] / j[1])
+               
+               
+               
+    print(confidence)
+    #   j_support = s_j[]
+      # if s_I in # If singleton is in 
+    
+    
+def generate_association_rules(items, s, c):
+    
+    for entry in items:
+        entry_length = len(entry)
+        print(entry_length)
+        for i in range(entry_length):
+            print(entry[i][0][0])
 
 def main():
     #transactions = dat_to_df('/T10I4D100K.dat') # <-- this guy is huge
@@ -90,8 +122,10 @@ def main():
     
     test_trans =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
     
-    find_frequent_itemsets(test_trans, 2, 2)
-    #print(test_trans)
+    frequent_items = find_frequent_itemsets(test_trans, 2, 2)
+    
+    calculate_confidence(frequent_items[1], frequent_items[0])
+    #generate_association_rules(frequent_items, 2, c=0.5)
 main()
 
 
