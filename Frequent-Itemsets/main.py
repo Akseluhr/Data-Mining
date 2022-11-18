@@ -15,6 +15,8 @@ def find_frequent_itemsets(tansactions, s, k=2):
     #unique_items = {x for l in tansactions for x in l}
    # print(unique_items)
     unique_items = []
+    
+    # Pass 1. Call all unique items
     for basket in tansactions:
         for item in basket: 
             if item not in unique_items: 
@@ -28,7 +30,8 @@ def find_frequent_itemsets(tansactions, s, k=2):
     
     
     count = 0
-    # find support
+    # Pass two. find Support of each unique items
+    # Keep only those that respects the threshold
     for i in range(k+1):
         if i == 0:
             for item in unique_items:
@@ -44,6 +47,10 @@ def find_frequent_itemsets(tansactions, s, k=2):
                     
             #print('frequent singletons:', support_singleton_item)
             #print('all counts', support_singleton_total)
+            
+    # Pass three. Find frequent pairs that respect the threshold and keep them
+    # We construct all possible pairs based on the frequent items of previous step
+    # Then, we filter the frequent pairs that respect the support threshold and keep them
         if i == 1: # step 2
             all_possible_pairs = list(itertools.combinations(support_singleton_item, 2))
            # print(all_possible_pairs) # all possible pairs of the frequent singletons
@@ -65,7 +72,8 @@ def find_frequent_itemsets(tansactions, s, k=2):
             print("frequent doubletons:", support_doubleton_count)
         
         if i == 2: # step 3
-            all_possible_pairs = list(itertools.combinations(support_singleton_item, 3))
+            all_possible_pairs = list(itertools.combinations(support_doubleton_count, 3))
+            print(all_possible_pairs)
             count = 0
             for pair in all_possible_pairs:
                 for basket in tansactions:
@@ -127,7 +135,7 @@ def generate_association_rules(doubletons, singletons, t=0.5):
        I_j_support, I_support = find_corresponding_items_support(singletons, dt)
        #confidence.append(calc_confidence(I_j_support, I_support))
        c = calc_confidence(I_j_support, I_support, t)
-       print("Confidence", dt[0][0], "-->", dt[0][1], ": ", c)
+       print("Confidence", dt[0][0], "-->", dt[0][1], ": ", c, dt[0][0])
        dt_swapped = swap_elements(dt)
        I_j_support, I_support = find_corresponding_items_support(singletons, dt_swapped)
        #confidence.append(calc_confidence(I_j_support, I_support))
@@ -137,13 +145,13 @@ def generate_association_rules(doubletons, singletons, t=0.5):
 
 def main():
     transactions = dat_to_df('/T10I4D100K.dat') # <-- this guy is huge
-    transactions = transactions[:1000] # So we try with the first 20 transactions
+    transactions = transactions[:100] # So we try with the first 20 transactions
     
    # transactions =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
     
-    frequent_items = find_frequent_itemsets(transactions, 10, 2)
+    frequent_items = find_frequent_itemsets(transactions, 3, 2)
    # print(list(c))
-    confidence = generate_association_rules(frequent_items[1], frequent_items[0], 0.6)
+    confidence = generate_association_rules(frequent_items[1], frequent_items[0], 0.5)
    # print(swap_elements(('l1', 'l2')))
     #generate_association_rules(frequent_items, 2, c=0.5)
     
