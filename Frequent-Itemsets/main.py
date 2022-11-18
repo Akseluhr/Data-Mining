@@ -137,11 +137,11 @@ def generate_association_rules(doubletons, singletons, t=0.5):
 
 def main():
     transactions = dat_to_df('/T10I4D100K.dat') # <-- this guy is huge
-    transactions = transactions # So we try with the first 20 transactions
+    transactions = transactions[:1000] # So we try with the first 20 transactions
     
    # transactions =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
     
-    frequent_items = find_frequent_itemsets(transactions, 1000, 2)
+    frequent_items = find_frequent_itemsets(transactions, 10, 2)
    # print(list(c))
     confidence = generate_association_rules(frequent_items[1], frequent_items[0], 0.6)
    # print(swap_elements(('l1', 'l2')))
