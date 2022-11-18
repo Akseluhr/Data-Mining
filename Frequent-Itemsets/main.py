@@ -42,8 +42,8 @@ def find_frequent_itemsets(tansactions, s, k=2):
                     support_singleton_total.append((item, count))
                 count = 0
                     
-            print('frequent singletons:', support_singleton_item)
-            print('all counts', support_singleton_total)
+            #print('frequent singletons:', support_singleton_item)
+            #print('all counts', support_singleton_total)
         if i == 1: # step 2
             all_possible_pairs = list(itertools.combinations(support_singleton_item, 2))
            # print(all_possible_pairs) # all possible pairs of the frequent singletons
@@ -85,47 +85,68 @@ def find_frequent_itemsets(tansactions, s, k=2):
                 
     return list([support_singleton_total, support_doubleton_count, support_tripleton_count])
 
-def calculate_confidence(doubletons, singletons):
-    s_I = set(doubletons)
-    s_j = set(singletons)
-    print(s_j)
+def calc_confidence(I_j_support, I_support, c):
+    confidence = I_j_support / I_support
+    message = "Rule did not respect threshold."
+    if (confidence >= float(c)):
+        return confidence
+    else:
+        return message
+
+
+# How tf to generalize this? that's the question.
+def swap_elements(itemset): # use this function for swapping elements
+    return [(itemset[0][1], itemset[0][0]), itemset[1]]
+
+'''
+For each doubleton,
+Iterate over the singletons and find the singleton that matches with the first element of the doubleton 
+(e.g. doubleton first element: l2, then we find l2 in the singletons)
+Get the  support of the doubleton and singleton
+Calculate and return the confidence
+'''
+def find_corresponding_items_support(singletons, curr_dt):
+    #I_itemset = curr_dt[0]    # <-- divide this with support of current I
+   # print(I_itemset)
+    for j in singletons: # Need to find the current item count for I_itemset's first item
+        j_item = j[0]
+       # print("curr item of singletons", j_item)
+        I_first_item = curr_dt[0][0]
+       # print("curr item of I_itemset", I_first_item)
+        if I_first_item == j_item: # If the first item of dataset (say l2) equals the singleton (l2), we get the singleton count, and the doubleton count, and calculate the confidence
+            I_support = j[1]
+            I_j_support = curr_dt[1]
+       #     print("Support itemset", I_support)
+        #    print("I_j_support", I_j_support)
+            return [I_j_support, I_support]
+            break
+            
+def generate_association_rules(doubletons, singletons, t=0.5):
     confidence = []
     for dt in doubletons:
-       print(dt)
-       #comb = list(itertools.combinations(dt[0], 2))
-       
-       dt_support = dt[1] # <-- divide this with support of current I
-       
-       for j in singletons:
-           if j[0] == dt[0][0]:
-               print(j[1])
-               confidence.append(dt[1] / j[1])
-               
-               
-               
-    print(confidence)
-    #   j_support = s_j[]
-      # if s_I in # If singleton is in 
+       I_j_support, I_support = find_corresponding_items_support(singletons, dt)
+       #confidence.append(calc_confidence(I_j_support, I_support))
+       c = calc_confidence(I_j_support, I_support, t)
+       print("Confidence", dt[0][0], "-->", dt[0][1], ": ", c)
+       dt_swapped = swap_elements(dt)
+       I_j_support, I_support = find_corresponding_items_support(singletons, dt_swapped)
+       #confidence.append(calc_confidence(I_j_support, I_support))
+       c = calc_confidence(I_j_support, I_support, t)
+       print("Confidence", dt_swapped[0][0], "-->", dt_swapped[0][1], ": ", c)
     
-    
-def generate_association_rules(items, s, c):
-    
-    for entry in items:
-        entry_length = len(entry)
-        print(entry_length)
-        for i in range(entry_length):
-            print(entry[i][0][0])
 
 def main():
-    #transactions = dat_to_df('/T10I4D100K.dat') # <-- this guy is huge
-    #transactions = transactions[:20] # So we try with the first 20 transactions
+    transactions = dat_to_df('/T10I4D100K.dat') # <-- this guy is huge
+    transactions = transactions # So we try with the first 20 transactions
     
-    test_trans =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
+   # transactions =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
     
-    frequent_items = find_frequent_itemsets(test_trans, 2, 2)
-    
-    calculate_confidence(frequent_items[1], frequent_items[0])
+    frequent_items = find_frequent_itemsets(transactions, 1000, 2)
+   # print(list(c))
+    confidence = generate_association_rules(frequent_items[1], frequent_items[0], 0.6)
+   # print(swap_elements(('l1', 'l2')))
     #generate_association_rules(frequent_items, 2, c=0.5)
+    
 main()
 
 
