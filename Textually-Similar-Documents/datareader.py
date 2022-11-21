@@ -24,6 +24,7 @@ class DataReader:
     def read_all_text_files(self, path_to_files):
         all_documents = []
         for file in os.listdir(path_to_files):
+            print(file)
             if file.endswith(".txt"):
                 file_path = f"{path_to_files}/{file}"
                 document = self.read_text_file(self, file_path)
@@ -35,4 +36,3 @@ class DataReader:
         all_documents = self.read_all_text_files(path_to_files)
         pre_processed_documents = self.preprocess_all_documents(all_documents)
         return pre_processed_documents
-

@@ -1,14 +1,5 @@
 import numpy as np
 
-
-# class CompareSignatures:
-#    def __init__(self):
-#        pass
-
-#    def signature_similarity(self,  signature, column_c, column_d):
-# the fraction of elements with equal minhash signatures
-#       return np.mean(signature[:, column_c] == signature[:, column_d])
-#
 class CompareSignatures:
     # vec1 and vec2 = minhash signatures
 
@@ -16,6 +7,8 @@ class CompareSignatures:
         pass
 
     def signature_similarity(signature, column_c, column_d):
+        # the fraction of elements with equal minhash signatures
+        #print(signature, column_c, column_d)
         return np.mean(signature[:, column_c] == signature[:, column_d])
 
     # Estimate of jaccard similarity
