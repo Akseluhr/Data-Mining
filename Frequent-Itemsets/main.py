@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Nov 18 16:40:13 2022
-
-@author: akseluhr
-"""
-
 import itertools
 import os
 import sys
@@ -49,17 +41,10 @@ def generate_candidates(items, singletons):
     candidates = {}
     for item in items:
         for singleton in singletons:
-            if singleton[0] not in item: #Not in candidate pair
-                print("current item, is not in the dictionary", item)
-                print("gets appended to candidate dict, is not in the dictionary", singleton)
+            if singleton[0] not in item:
                 candidate = tuple(sorted(item + singleton))
-                print("candidate", candidate)
                 if candidate not in candidates:
-                   # print("curr candidate", candidates[candidate])
-                   print("curr candidate", candidate) 
-                   candidates[candidate] = 0
-                    
-    print(candidates)
+                    candidates[candidate] = 0
     return candidates
 
 
@@ -72,22 +57,34 @@ def count_candidates(baskets, candidates, candidate_length, total_length):
     return candidates
 
 
-def main():
-    support = 1  # 1 percent
-    confidence = 0.5
-    frequent_item_sets = []
-    associations = set()
+def find_confidence_for_each_permuted_pair(item_set_permuted, position, frequent_item_sets):
+    # print('THE ITEM SET PERMUTED WITH LENGTH ::', item_set_permuted, len(item_set_permuted))
+    left_side = item_set_permuted[:position]
+    # print('Step1: ', item_set_permuted, before_arrow, arrow_position)
+    union_support = find_support_value(item_set_permuted, frequent_item_sets)
+    single_support = find_support_value(left_side, frequent_item_sets)
+    # print('UNION SUPPORT AND SINGLE SUPPORT :', union_support, single_support)
+    return union_support / single_support
 
-    baskets2 = dat_to_df('/T10I4D100K.dat')
-    #transactions =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
-    baskets = [[11, 12, 15], [12, 14], [12, 13], [11, 12, 14], [11, 13], [12, 13], [11, 13], [11, 12, 13, 15], [11, 12, 13]]
-    # baskets = baskets[:100]  # So we try with the first 20 transactions
+
+def find_support_value(item_set_permuted, frequent_item_sets):
+    # print("FREQUENT ITEMS ::", frequent_item_sets)
+    # print('GET SUPPORT :: ', item_set_permuted, frequent_item_sets[len(item_set_permuted) - 1][tuple(sorted(
+    # item_set_permuted))], )
+    return frequent_item_sets[len(item_set_permuted) - 1][tuple(sorted(item_set_permuted))]
+
+
+def find_frequent_items():
+    support = 1
+    frequent_item_sets = []
+    baskets = dat_to_df('/T10I4D100K.dat')
+
     singletons_count, singletons_count_with_percentage = count_singletons_from_baskets(baskets, len(baskets))
     filtered_items = filter_frequent_items(singletons_count_with_percentage, support)
-    # print(filtered_items)
 
     frequent_singletons = {(i,): filtered_items[i] for i in filtered_items}
     frequent_item_sets.append(frequent_singletons)
+    print("Total number of frequent singletons found:", len(frequent_item_sets[0]))
     print("Frequent singletons:", frequent_singletons)
 
     k = 1
@@ -96,13 +93,43 @@ def main():
         candidates_count = count_candidates(baskets, candidates, k + 1, len(baskets))
         frequent_item_set = filter_frequent_items(candidates_count, support)
         frequent_item_sets.append(frequent_item_set)
+        print("Total number of frequent " + str(k + 1) + "- tuples found:", len(frequent_item_sets[k]))
         print("Frequent " + str(k + 1) + "- tuples:", frequent_item_sets[k])
         k += 1
 
+    return frequent_item_sets
+
+
+def find_association_rules_from_frequent_items(frequent_item_sets):
+    confidence = 0.5
+    associations = set()
+
     for frequent_item_set in frequent_item_sets[1:]:
-        for k_tuple in frequent_item_set:
-            for tuple_permutation in itertools.permutations(k_tuple, len(k_tuple)):
-                print(tuple_permutation)
+        for item_set in frequent_item_set:
+            for item_set_permutations in itertools.permutations(item_set, len(item_set)):
+                # print('PERMUTED :: ', item_set_permutations)
+                for position in reversed(range(1, len(item_set_permutations))):
+                    c = find_confidence_for_each_permuted_pair(item_set_permutations, position, frequent_item_sets)
+                    # print('Confidence :', c)
+                    if c >= confidence:
+                        # print('Association found : ', item_set_permutations[:position], ' -> ',
+                        #       item_set_permutations[position:], ' : ', c)
+                        associations.add((', '.join(
+                            map(str, sorted(item_set_permutations[:position]))) + ' -> ' + ', '.join(
+                            map(str, sorted(item_set_permutations[position:]))), c))
+                    else:
+                        # Known rule: If A,B,C -> D is below confidence so that A,B -> C,D.
+                        # So no need to iterate over arrow positions further
+                        break
+
+    print("Associations:")
+    for association in associations:
+        print(association)
+
+
+def main():
+    frequent_item_sets = find_frequent_items()
+    find_association_rules_from_frequent_items(frequent_item_sets)
 
 
 main()
