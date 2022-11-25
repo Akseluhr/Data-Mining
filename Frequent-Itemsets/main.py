@@ -1,197 +1,108 @@
-import pandas as pd
-import os,sys
-from IPython.display import display
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Nov 18 16:40:13 2022
+
+@author: akseluhr
+"""
+
 import itertools
+import os
+import sys
+
+
 def dat_to_df(filename):
-  curr_file_dirr = os.path.dirname(__file__)
-  sys.path.append(curr_file_dirr)
-  print(curr_file_dirr)
-  doc = open(curr_file_dirr + '/data' + filename, 'r')
-  transactions = [i.strip('\n, ').split(' ') for i in doc] # Remove all new lines and split() splits a string into substrings whenever it finds a blank space.
-  return transactions
+    curr_file_dirr = os.path.dirname(__file__)
+    sys.path.append(curr_file_dirr)
+    print(curr_file_dirr)
+    doc = open(curr_file_dirr + '/data' + filename, 'r')
+    transactions = [i.strip('\n, ').split(' ') for i in doc]
+    return transactions
 
-def find_frequent_itemsets(tansactions, s, k=2):
-    #unique_items = list(set(tansactions))
-    #unique_items = {x for l in tansactions for x in l}
-   # print(unique_items)
-    unique_items = []
-    
-    # Pass 1. Call all unique items
-    for basket in tansactions:
-        for item in basket: 
-            if item not in unique_items: 
-                unique_items.append(item)
-    print('all unique items:', unique_items)
 
-    support_singleton_item = []
-    support_singleton_total = []
-    support_doubleton_count = []
-    support_tripleton_count = []
-    
-    
-    count = 0
-    # Pass two. find Support of each unique items
-    # Keep only those that respects the threshold
-    for i in range(k+1):
-        if i == 0:
-            for item in unique_items:
-                for basket in tansactions:
-                    if item in basket:
-                        count += 1                
-        
-                
-                if count >= s:
-                    support_singleton_item.append(item)
-                    support_singleton_total.append((item, count))
-                count = 0
+def count_singletons_from_baskets(baskets, length):
+    count = {}
+    count_with_percentage = {}
+    for basket in baskets:
+        for item in basket:
+            if item in count:
+                count[item] += 1
+            else:
+                count[item] = 1
+            if item in count_with_percentage:
+                count_with_percentage[item] += (1 / length) * 100
+            else:
+                count_with_percentage[item] = (1 / length) * 100
+    return count, count_with_percentage
+
+
+def filter_frequent_items(items_count, support_threshold):
+    filtered_items = {}
+    for item in items_count:
+        if items_count[item] >= support_threshold:
+            filtered_items[item] = items_count[item]
+
+    return filtered_items
+
+
+def generate_candidates(items, singletons):
+    candidates = {}
+    for item in items:
+        for singleton in singletons:
+            if singleton[0] not in item: #Not in candidate pair
+                print("current item, is not in the dictionary", item)
+                print("gets appended to candidate dict, is not in the dictionary", singleton)
+                candidate = tuple(sorted(item + singleton))
+                print("candidate", candidate)
+                if candidate not in candidates:
+                   # print("curr candidate", candidates[candidate])
+                   print("curr candidate", candidate) 
+                   candidates[candidate] = 0
                     
-            #print('frequent singletons:', support_singleton_item)
-            #print('all counts', support_singleton_total)
-            
-    # Pass three. Find frequent pairs that respect the threshold and keep them
-    # We construct all possible pairs based on the frequent items of previous step
-    # Then, we filter the frequent pairs that respect the support threshold and keep them
-        if i == 1: # step 2
-            all_possible_pairs = list(itertools.combinations(support_singleton_item, 2))
-           # print(all_possible_pairs) # all possible pairs of the frequent singletons
-            count = 0
-            for pair in all_possible_pairs:
-                for basket in tansactions:
-                    if (pair[0] in basket) and (pair[1] in basket):
-
-                        count += 1
-                      #  print(pair, basket, count)
-                        
-                if count >= s:
-                    support_doubleton_count.append((pair, count))
-                count = 0
-                
-                #for i in range(len(pair)):
-                 #   if
-            
-            print("frequent doubletons:", support_doubleton_count)
-        
-        if i == 2: # step 3
-            all_possible_pairs = list(itertools.combinations(support_doubleton_count, 3))
-            print(all_possible_pairs)
-            count = 0
-            for pair in all_possible_pairs:
-                for basket in tansactions:
-                    if (pair[0] in basket) and (pair[1] in basket) and (pair[2] in basket):
-
-                        count += 1
-                      #  print(pair, basket, count)
-                        
-                if count >= s:
-                    support_tripleton_count.append((pair, count))
-                count = 0
-                
-                #for i in range(len(pair)):
-                 #   if
-            
-            print("frequent tripletons:", support_tripleton_count)
-                
-    return list([support_singleton_total, support_doubleton_count, support_tripleton_count])
-
-def calc_confidence(I_j_support, I_support, c):
-    confidence = I_j_support / I_support
-    message = "Rule did not respect threshold."
-    if (confidence >= float(c)):
-        return confidence
-    else:
-        return message
+    print(candidates)
+    return candidates
 
 
-# How tf to generalize this? that's the question.
-def swap_elements(itemset): # use this function for swapping elements
-    return [(itemset[0][1], itemset[0][0]), itemset[1]]
+def count_candidates(baskets, candidates, candidate_length, total_length):
+    for basket in baskets:
+        basket_variations = itertools.combinations(basket, candidate_length)
+        for combination in basket_variations:
+            if combination in candidates:
+                candidates[combination] += (1 / total_length) * 100
+    return candidates
 
-'''
-For each doubleton,
-Iterate over the singletons and find the singleton that matches with the first element of the doubleton 
-(e.g. doubleton first element: l2, then we find l2 in the singletons)
-Get the  support of the doubleton and singleton
-Calculate and return the confidence
-'''
-def find_corresponding_items_support(singletons, curr_dt):
-    #I_itemset = curr_dt[0]    # <-- divide this with support of current I
-   # print(I_itemset)
-    for j in singletons: # Need to find the current item count for I_itemset's first item
-        j_item = j[0]
-       # print("curr item of singletons", j_item)
-        I_first_item = curr_dt[0][0]
-       # print("curr item of I_itemset", I_first_item)
-        if I_first_item == j_item: # If the first item of dataset (say l2) equals the singleton (l2), we get the singleton count, and the doubleton count, and calculate the confidence
-            I_support = j[1]
-            I_j_support = curr_dt[1]
-       #     print("Support itemset", I_support)
-        #    print("I_j_support", I_j_support)
-            return [I_j_support, I_support]
-            break
-            
-def generate_association_rules(doubletons, singletons, t=0.5):
-    confidence = []
-    for dt in doubletons:
-       I_j_support, I_support = find_corresponding_items_support(singletons, dt)
-       #confidence.append(calc_confidence(I_j_support, I_support))
-       c = calc_confidence(I_j_support, I_support, t)
-       print("Confidence", dt[0][0], "-->", dt[0][1], ": ", c, dt[0][0])
-       dt_swapped = swap_elements(dt)
-       I_j_support, I_support = find_corresponding_items_support(singletons, dt_swapped)
-       #confidence.append(calc_confidence(I_j_support, I_support))
-       c = calc_confidence(I_j_support, I_support, t)
-       print("Confidence", dt_swapped[0][0], "-->", dt_swapped[0][1], ": ", c)
-    
 
 def main():
-    transactions = dat_to_df('/T10I4D100K.dat') # <-- this guy is huge
-    transactions = transactions[:100] # So we try with the first 20 transactions
-    
-   # transactions =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
-    
-    frequent_items = find_frequent_itemsets(transactions, 3, 2)
-   # print(list(c))
-    confidence = generate_association_rules(frequent_items[1], frequent_items[0], 0.5)
-   # print(swap_elements(('l1', 'l2')))
-    #generate_association_rules(frequent_items, 2, c=0.5)
-    
+    support = 1  # 1 percent
+    confidence = 0.5
+    frequent_item_sets = []
+    associations = set()
+
+    baskets2 = dat_to_df('/T10I4D100K.dat')
+    #transactions =[['l1', 'l2', 'l5'], ['l2', 'l4'], ['l2', 'l3'], ['l1', 'l2', 'l4'], ['l1', 'l3'], ['l2', 'l3'], ['l1', 'l3'], ['l1', 'l2', 'l3', 'l5'], ['l1', 'l2', 'l3']]
+    baskets = [[11, 12, 15], [12, 14], [12, 13], [11, 12, 14], [11, 13], [12, 13], [11, 13], [11, 12, 13, 15], [11, 12, 13]]
+    # baskets = baskets[:100]  # So we try with the first 20 transactions
+    singletons_count, singletons_count_with_percentage = count_singletons_from_baskets(baskets, len(baskets))
+    filtered_items = filter_frequent_items(singletons_count_with_percentage, support)
+    # print(filtered_items)
+
+    frequent_singletons = {(i,): filtered_items[i] for i in filtered_items}
+    frequent_item_sets.append(frequent_singletons)
+    print("Frequent singletons:", frequent_singletons)
+
+    k = 1
+    while len(frequent_item_sets[k - 1]) > 0:
+        candidates = generate_candidates(frequent_item_sets[k - 1], frequent_item_sets[0])
+        candidates_count = count_candidates(baskets, candidates, k + 1, len(baskets))
+        frequent_item_set = filter_frequent_items(candidates_count, support)
+        frequent_item_sets.append(frequent_item_set)
+        print("Frequent " + str(k + 1) + "- tuples:", frequent_item_sets[k])
+        k += 1
+
+    for frequent_item_set in frequent_item_sets[1:]:
+        for k_tuple in frequent_item_set:
+            for tuple_permutation in itertools.permutations(k_tuple, len(k_tuple)):
+                print(tuple_permutation)
+
+
 main()
-
-
-# Support to see how frequent a set of items is in a dataset. E.g. How often does {2, 5} occur in  [[2,5,3],[1,2,3][2,5,8]]
-
-# Apriori algorithm was done for scalability
-
-
-
-# Task 1:
-# Support is the frequency (occurences) of the itemsets (A) or (A, B). Divide it by total num of items
-
-
-# Out of set of items (A-E) and set of transactions (T1 - T5) (containing subsets of set of items)
-
-# To find the support: 
-# 1. Traverse the entire list of transactions
-# 2. Find if your subitemset (e.g. (milk, bread) which is a doubleton itemset) occurs more than s time where s is the threshold 
-    # 2b. start with singletons (milk)
-    # 2c. then doubletons 
-    # 2d up til the larges found basket (maybe we will find five baskets with e.g. 100 items, 99 of which are identical. if our threshold is 5, we will consider those itemsets as frequent itemsets 
-    # Count the exact amount of occurences of those ITEMSETS that is greater than the threshold. This is the support. 
-# For an itemset to be frequent, ALL its subsets must be frequent. 
-    
-    # Slide 17 important because apriori algorithm is based on this
-    
-    
-# Task 2: 
-# Generate association rules X - > Y Given a confidence threshold
-# How likely is item(set) Y purchased when item(set) X is purchased?
-# COnfidence is given by: 
-    # support of I union J, where I and J are the number of occurances of an item(set) in transactions,in which Y also appears
-    # E.g. in 5/10 transactions, beer occurs. In four of them, apples occur. Confidence is given by support(apple, beer) / support (apple) --> 0.8 
-    
-    
-# We want to find INTERESTING associations. E.g. x --> milk is a very common rule, everyone buys milk 
-# We can find this by computing the Interest of an association. Conf(I-->j) - conditional probability of j
-    # keep the ones with high positive or negative interest values, usually above .5
-    # getting the conditional probability of j --> number of occurences / number of transactions
-    
